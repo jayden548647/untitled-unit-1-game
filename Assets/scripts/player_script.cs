@@ -9,6 +9,8 @@ public class player_script : MonoBehaviour
     public LayerMask groundLayerMask;
     public LayerMask wallLayerMask;
     public LayerMask enemyLayerMask;
+    public Animator anim;
+    public SpriteRenderer sr;
     bool isGrounded = false;
     bool onLeftWall = false;
     bool onRightWall = false;
@@ -41,6 +43,12 @@ public class player_script : MonoBehaviour
     void Update()
     {
         player.gravityScale = 1;
+        anim.SetBool("isgrounded", false);
+        anim.SetBool("iswalking", false);
+        anim.SetBool("isrunning", false);
+        anim.SetBool("isjumping", false);
+        anim.SetBool("isfalling", false);
+        anim.SetBool("isSliding", false);
 
         if (wallJumping == false)
         {
@@ -49,10 +57,14 @@ public class player_script : MonoBehaviour
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
                     player.velocity = new Vector2(-12f, player.velocity.y);
+                    anim.SetBool("isrunning", true);
+                    sr.flipX = true;
                 }
                 else
                 {
                     player.velocity = new Vector2(-8f, player.velocity.y);
+                    anim.SetBool("iswalking", true);
+                    sr.flipX = true;
                 }
             }
             if (Input.GetKey(KeyCode.D))
@@ -60,10 +72,21 @@ public class player_script : MonoBehaviour
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
                     player.velocity = new Vector2(12f, player.velocity.y);
+                    anim.SetBool("isrunning", true);
+                    sr.flipX = false;
                 }
                 else
                 {
                     player.velocity = new Vector2(8f, player.velocity.y);
+                    anim.SetBool("iswalking", true);
+                    sr.flipX = false;
+                }
+            }
+            else
+            {
+                if(player.velocity.x > 0 || player.velocity.x < 0)
+                {
+                    anim.SetBool("isSliding", true);
                 }
             }
         }
@@ -78,11 +101,21 @@ public class player_script : MonoBehaviour
                 else
                 {
                     player.velocity = new Vector2(player.velocity.x, 7f);
+                    anim.SetBool("isjumping", true);
                 }
+            }
+            anim.SetBool("isgrounded", true);
+        }
+        if (isGrounded == false)
+        {
+            if (player.velocity.y <= 0)
+            {
+                anim.SetBool("isjumping", false);
+                anim.SetBool("isfalling", true);
             }
         }
 
-        if(isGrounded == false)
+        if (isGrounded == false)
         {
             if(Input.GetKey(KeyCode.S))
             {
@@ -93,8 +126,10 @@ public class player_script : MonoBehaviour
         if(onLeftWall == true)
         {
             player.gravityScale = 0.25f;
+            sr.flipX = false;
             if (Input.GetKeyDown(KeyCode.Space))
             {
+               
                 player.velocity = new Vector2(5f, 9f);
                 wallJumping = true;
             }
@@ -102,8 +137,10 @@ public class player_script : MonoBehaviour
         if (onRightWall == true)
         {
             player.gravityScale = 0.25f;
+            sr.flipX = true;
             if (Input.GetKeyDown(KeyCode.Space))
             {
+          
                 player.velocity = new Vector2(-5f, 9f);
                 wallJumping = true;
             }
@@ -115,11 +152,12 @@ public class player_script : MonoBehaviour
         ExtendedRayCollisionCheck(0.5f, 0);
         leftenemyCollisionCheck();
         rightenemyCollisionCheck();
+        downenemyCollisionCheck();
 
     }
     public void DoRayCollisionCheck()
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
 
 
         //cast a ray downward 
@@ -147,7 +185,7 @@ public class player_script : MonoBehaviour
     }
     public void leftwallCollisionCheck()
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
 
 
         //cast a ray downward 
@@ -174,7 +212,7 @@ public class player_script : MonoBehaviour
     }
     public void rightwallCollisionCheck()
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
 
 
         //cast a ray downward 
@@ -202,7 +240,7 @@ public class player_script : MonoBehaviour
 
     public bool ExtendedRayCollisionCheck(float xoffs, float yoffs)
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
         bool hitSomething = false;
 
         // convert x and y offset into a Vector3 
@@ -232,7 +270,7 @@ public class player_script : MonoBehaviour
     }
     public void leftenemyCollisionCheck()
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
 
 
         //cast a ray downward 
@@ -256,7 +294,7 @@ public class player_script : MonoBehaviour
     }
     public void rightenemyCollisionCheck()
     {
-        float rayLength = 0.75f; // length of raycast
+        float rayLength = 1f; // length of raycast
 
 
         //cast a ray downward 
@@ -278,5 +316,62 @@ public class player_script : MonoBehaviour
         Debug.DrawRay(transform.position, Vector2.right * rayLength, hitColor);
 
     }
+    public void downenemyCollisionCheck()
+    {
+        float rayLength = 1f; // length of raycast
+
+
+        //cast a ray downward 
+        RaycastHit2D hit;
+
+        hit = Physics2D.Raycast(transform.position, Vector2.down, rayLength, enemyLayerMask);
+
+        Color hitColor = Color.red;
+
+
+        if (hit.collider != null)
+        {
+            hitColor = Color.green;
+            Destroy(hit.transform.gameObject);
+            player.velocity = new Vector2(player.velocity.x, 2f);
+        }
+
+        // draw a debug ray to show ray position
+        // You need to enable gizmos in the editor to see these
+        Debug.DrawRay(transform.position, Vector2.right * rayLength, hitColor);
+
+    }
+    public bool ExtendedEnemyCollisionCheck(float xoffs, float yoffs)
+    {
+        float rayLength = 1f; // length of raycast
+        bool hitSomething = false;
+
+        // convert x and y offset into a Vector3 
+        Vector3 offset = new Vector3(xoffs, yoffs, 0);
+
+        //cast a ray downward 
+        RaycastHit2D hit;
+
+
+        hit = Physics2D.Raycast(transform.position + offset, -Vector2.up, rayLength, enemyLayerMask);
+
+        Color hitColor = Color.white;
+
+
+        if (hit.collider != null)
+        {
+            hitColor = Color.green;
+            Destroy(hit.transform.gameObject);
+            player.velocity = new Vector2(player.velocity.x, 2f);
+
+        }
+        // draw a debug ray to show ray position
+        // You need to enable gizmos in the editor to see these
+        Debug.DrawRay(transform.position + offset, -Vector3.up * rayLength, hitColor);
+
+        return hitSomething;
+
+    }
+
 
 }

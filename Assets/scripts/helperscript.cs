@@ -34,12 +34,12 @@ public class helperscript : MonoBehaviour
         }
         if (enemydir < 0)
         {
-            sr.flipX = false;
+            sr.flipX = true;
             enemy.velocity = new Vector2(-3f, enemy.velocity.y);
         }
         if (enemydir > 0)
         {
-            sr.flipX = true;
+            sr.flipX = false;
             enemy.velocity = new Vector2(3f, enemy.velocity.y);
         }
         // draw a debug ray to show ray position
