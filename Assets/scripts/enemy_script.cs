@@ -16,5 +16,7 @@ public class enemy_script : MonoBehaviour
     {
         helper.ExtendedRayCollisionCheck(-0.5f, 0);
         helper.ExtendedRayCollisionCheck(0.5f, 0);
+        helper.leftWallCollisionCheck(0.5f, 0);
+        helper.rightWallCollisionCheck(-0.5f, 0);
     }
 }
