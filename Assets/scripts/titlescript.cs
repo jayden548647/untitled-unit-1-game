@@ -6,11 +6,16 @@ public class titlescript : MonoBehaviour
 {
     public Animator anim;
     public Transform player;
-    int rng = Random.Range(1, 3);
+    
     // Start is called before the first frame update
     void Start()
     {
-        if(rng == 1)
+        int rng = Random.Range(1, 4);
+        anim.SetBool("1", false);
+        anim.SetBool("2", false);
+        anim.SetBool("3", false);
+
+        if (rng == 1)
         {
             anim.SetBool("1", true);
             anim.SetBool("2", false);
@@ -38,7 +43,7 @@ public class titlescript : MonoBehaviour
     {
         transform.position = player.transform.position + new Vector3(0, 5, -10);
 
-        if (Input.GetKey(KeyCode.Enter))
+        if (Input.GetKey(KeyCode.Return))
         {
             Destroy(gameObject);
         }

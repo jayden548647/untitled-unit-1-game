@@ -5,6 +5,7 @@ using UnityEngine;
 public class ui_script : MonoBehaviour
 {
     public Transform player;
+    int scanlines = 1;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,6 +15,19 @@ public class ui_script : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = player.transform.position + new Vector3(0, 5, -12);
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            scanlines = -scanlines;
+        }
+
+        if (scanlines == 1)
+        {
+            transform.position = player.transform.position + new Vector3(0, 5, -12);
+        }
+        if(scanlines == -1)
+        {
+            transform.position = player.transform.position + new Vector3(0, 5, 15);
+        }
+        
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class player_script : MonoBehaviour
     public LayerMask groundLayerMask;
     public LayerMask wallLayerMask;
     public LayerMask enemyLayerMask;
+    public LayerMask doorLayerMask;
     public Animator anim;
     public SpriteRenderer sr;
     bool isGrounded = false;
@@ -16,11 +18,13 @@ public class player_script : MonoBehaviour
     bool onRightWall = false;
     bool wallJumping = false;
     bool isPlaying;
+    bool escape = false;
     int collections = 0;
-    int wincon = 0;
+    public int wincon = 0;
     float acceleration = 0;
     float TopSpeed = 20;
     float speed = 8;
+    public float timer = 200;
     Vector2 startpos;
    
     
@@ -46,6 +50,8 @@ public class player_script : MonoBehaviour
         groundLayerMask = LayerMask.GetMask("Ground");
         wallLayerMask = LayerMask.GetMask("Wall");
         enemyLayerMask = LayerMask.GetMask("Enemy");
+        doorLayerMask = LayerMask.GetMask("Door");
+        
         player = GetComponent<Rigidbody2D>();
         startpos = transform.position;
     }
@@ -56,33 +62,53 @@ public class player_script : MonoBehaviour
             Destroy(other.gameObject);
             collections++;
             print(collections);
+
         }
-    }
-    public void OnTriggerEnter2D(Collider2D crystal)
-    {
-        if (crystal.gameObject.tag == "Finish")
+        if (other.gameObject.tag == "checkpoint")
         {
-            Destroy(crystal.gameObject);
-            wincon++; 
+            startpos = transform.position;
         }
-    }
-    public void OnTriggerEnter2D(Collider2D door)
-    {
-        if (door.gameObject.tag == "winblock")
+        if (other.gameObject.tag == "winblock")
         {
-          if(wincon == 1)
+            if (wincon == 2)
             {
-                Destroy(door.gameObject);
+                Destroy(other.gameObject);
             }
         }
     }
-    public void OnTriggerEnter2D(Collider2D end)
+    private void OnCollisionEnter2D(UnityEngine.Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Finish")
+        {
+            Destroy(collision.gameObject);
+            wincon++; 
+            startpos = transform.position;
+            escape = true;
+        }
+    }
+    
+
+    public void OnTriggerStay2D(Collider2D end)
     {
         if (end.gameObject.tag == "win")
         {
-            if(Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKeyDown(KeyCode.Return)) 
             {
-                print("You Win");
+                if (wincon == 1)
+                {
+                    transform.position = player.position + new Vector2(0, -190);
+                    escape = false;
+                }
+            }
+        }
+        if (end.gameObject.tag == "win2")
+        {
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                if (wincon == 2)
+                {
+                    print("Victory");
+                }
             }
         }
     }
@@ -117,7 +143,11 @@ public class player_script : MonoBehaviour
         anim.SetBool("isSliding", false);
         anim.SetBool("notmoving", false);
 
-        if (isPlaying = true)
+        if(escape == false)
+        {
+            timer = 200;
+        }
+        if (isPlaying == true)
         {
             if (player.velocity.x == 0)
             {
@@ -255,14 +285,27 @@ public class player_script : MonoBehaviour
             downenemyCollisionCheck();
             ExtendedEnemyCollisionCheck(0.5f, 0);
             ExtendedEnemyCollisionCheck(-0.5f, 0);
+            doorCollisionCheck();
 
 
-            if (player.position.y <= -50)
+            if (player.position.y <= -50 && player.position.y >= -100)
             {
                 Respawn();
             }
+            if(player.position.y <= - 300)
+            {
+                Respawn();
+            }
+            if(escape == true)
+            {
+                timer = timer - Time.deltaTime;
+            }
+            if (timer < 0)
+            {
+                Application.Quit();
+            }
         }
-        if(Input.GetKey(KeyCode.Enter))
+        if(Input.GetKey(KeyCode.Return))
         {
             isPlaying = true;
         }
@@ -488,9 +531,38 @@ public class player_script : MonoBehaviour
         return hitSomething;
 
     }
+    public void doorCollisionCheck()
+    {
+        float rayLength = 2f; // length of raycast
+
+
+        //cast a ray downward 
+        RaycastHit2D hit;
+
+        hit = Physics2D.Raycast(transform.position, Vector2.left, rayLength, doorLayerMask);
+
+        Color hitColor = Color.red;
+
+
+        if (hit.collider != null)
+        {
+            hitColor = Color.green;
+
+            if (wincon == 1)
+            {
+                Destroy(hit.transform.gameObject);
+            }
+        }
+
+        // draw a debug ray to show ray position
+        // You need to enable gizmos in the editor to see these
+        Debug.DrawRay(transform.position, Vector2.left * rayLength, hitColor);
+
+    }
     void Respawn()
     {
-        transform.position = startpos;
+        transform.position = startpos + new Vector2(0, 30);
     }
+   
 
 }
