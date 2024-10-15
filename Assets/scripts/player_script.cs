@@ -108,6 +108,7 @@ public class player_script : MonoBehaviour
                 if (wincon == 2)
                 {
                     print("Victory");
+                    escape = false;
                 }
             }
         }
