@@ -7,6 +7,8 @@ using UnityEngine;
 public class player_script : MonoBehaviour
 {
     public Rigidbody2D player;
+    public failscript failure;
+    public titlescript2 loss;
     public LayerMask groundLayerMask;
     public LayerMask wallLayerMask;
     public LayerMask enemyLayerMask;
@@ -18,7 +20,7 @@ public class player_script : MonoBehaviour
     bool onRightWall = false;
     bool wallJumping = false;
     bool isPlaying;
-    bool escape = false;
+    public bool escape = false;
     int collections = 0;
     public int wincon = 0;
     float acceleration = 0;
@@ -301,7 +303,13 @@ public class player_script : MonoBehaviour
             {
                 timer = timer - Time.deltaTime;
             }
-            if (timer < 0)
+            if(timer < 0)
+            {
+                failure.failure();
+                loss.defeat();
+            }
+            
+            if (timer < -10)
             {
                 Application.Quit();
             }

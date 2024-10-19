@@ -5,6 +5,7 @@ using UnityEngine;
 public class titlescript2 : MonoBehaviour
 {
     public Transform player;
+    bool starting = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -14,11 +15,19 @@ public class titlescript2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = player.transform.position + new Vector3(0, 5, -9);
-
-        if (Input.GetKey(KeyCode.Return))
+        if (starting == true)
         {
-            Destroy(gameObject);
+            transform.position = player.transform.position + new Vector3(0, 5, -9);
         }
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            transform.position = player.transform.position + new Vector3(0, 5, 300);
+            starting = false;
+        }
+    }
+    public void defeat()
+    {
+        transform.position = player.transform.position + new Vector3(0, 5, -9);
     }
 }
