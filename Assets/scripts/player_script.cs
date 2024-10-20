@@ -9,6 +9,9 @@ public class player_script : MonoBehaviour
     public Rigidbody2D player;
     public failscript failure;
     public titlescript2 loss;
+    public escapescript Escape;
+    public signscript sign;
+    public victoryscript win;
     public LayerMask groundLayerMask;
     public LayerMask wallLayerMask;
     public LayerMask enemyLayerMask;
@@ -21,6 +24,7 @@ public class player_script : MonoBehaviour
     bool wallJumping = false;
     bool isPlaying;
     public bool escape = false;
+    bool gameover = false;
     int collections = 0;
     public int wincon = 0;
     float acceleration = 0;
@@ -86,6 +90,8 @@ public class player_script : MonoBehaviour
             wincon++; 
             startpos = transform.position;
             escape = true;
+            Escape.Hurry();
+            
         }
     }
     
@@ -96,10 +102,11 @@ public class player_script : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Return)) 
             {
-                if (wincon == 1)
+                if (wincon >= 1)
                 {
                     transform.position = player.position + new Vector2(0, -190);
                     escape = false;
+                    Escape.NoRush();
                 }
             }
         }
@@ -111,6 +118,10 @@ public class player_script : MonoBehaviour
                 {
                     print("Victory");
                     escape = false;
+                    Escape.NoRush();
+                    win.victory();
+                    loss.defeat();
+                    gameover = true;
                 }
             }
         }
@@ -305,6 +316,8 @@ public class player_script : MonoBehaviour
             }
             if(timer < 0)
             {
+                gameover = true;
+                Escape.NoRush();
                 failure.failure();
                 loss.defeat();
             }
@@ -313,10 +326,24 @@ public class player_script : MonoBehaviour
             {
                 Application.Quit();
             }
+
+            if(escape == false)
+            {
+                Escape.NoRush();
+                sign.signunflip();
+            }
+            if(escape == true)
+            {
+                sign.signflip();
+            }
         }
         if(Input.GetKey(KeyCode.Return))
         {
             isPlaying = true;
+        }
+        if(gameover == true)
+        {
+            isPlaying = false;
         }
     }
     public void DoRayCollisionCheck()

@@ -6,6 +6,7 @@ public class titlescript2 : MonoBehaviour
 {
     public Transform player;
     bool starting = true;
+    bool gameend = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,9 +26,13 @@ public class titlescript2 : MonoBehaviour
             transform.position = player.transform.position + new Vector3(0, 5, 300);
             starting = false;
         }
+        if (gameend == true)
+        {
+            transform.position = player.transform.position + new Vector3(0, 5, -9);
+        }
     }
     public void defeat()
     {
-        transform.position = player.transform.position + new Vector3(0, 5, -9);
+        gameend = true;
     }
 }
