@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class player_script : MonoBehaviour
@@ -348,6 +347,7 @@ public class player_script : MonoBehaviour
             print("end");
             Application.Quit();
         }
+
     }
     public void DoRayCollisionCheck()
     {
