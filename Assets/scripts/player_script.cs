@@ -310,10 +310,7 @@ public class player_script : MonoBehaviour
             {
                 Respawn();
             }
-            if(escape == true)
-            {
-                timer = timer - Time.deltaTime;
-            }
+            
             if(timer < 0)
             {
                 gameover = true;
@@ -322,10 +319,7 @@ public class player_script : MonoBehaviour
                 loss.defeat();
             }
             
-            if (timer < -10)
-            {
-                Application.Quit();
-            }
+            
 
             if(escape == false)
             {
@@ -344,6 +338,15 @@ public class player_script : MonoBehaviour
         if(gameover == true)
         {
             isPlaying = false;
+        }
+        if (escape == true)
+        {
+            timer = timer - Time.deltaTime;
+        }
+        if (timer < -10)
+        {
+            print("end");
+            Application.Quit();
         }
     }
     public void DoRayCollisionCheck()
