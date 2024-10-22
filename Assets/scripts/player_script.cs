@@ -11,6 +11,7 @@ public class player_script : MonoBehaviour
     public escapescript Escape;
     public signscript sign;
     public victoryscript win;
+    public lunascript lun;
     public LayerMask groundLayerMask;
     public LayerMask wallLayerMask;
     public LayerMask enemyLayerMask;
@@ -90,6 +91,7 @@ public class player_script : MonoBehaviour
             startpos = transform.position;
             escape = true;
             Escape.Hurry();
+            lun.sunrise();
             
         }
     }
@@ -106,6 +108,7 @@ public class player_script : MonoBehaviour
                     transform.position = player.position + new Vector2(0, -190);
                     escape = false;
                     Escape.NoRush();
+                    lun.moonrise();
                 }
             }
         }
@@ -147,147 +150,12 @@ public class player_script : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        player.gravityScale = 1;
-        anim.SetBool("isgrounded", false);
-        anim.SetBool("iswalking", false);
-        anim.SetBool("isrunning", false);
-        anim.SetBool("isjumping", false);
-        anim.SetBool("isfalling", false);
-        anim.SetBool("isSliding", false);
-        anim.SetBool("notmoving", false);
-
-        if(escape == false)
-        {
-            timer = 200;
-        }
+        PlayerStateReset();
+        
         if (isPlaying == true)
         {
-            if (player.velocity.x == 0)
-            {
-                anim.SetBool("notmoving", true);
-            }
-            if (wallJumping == false)
-            {
-                if (onLeftWall == false)
-                {
-                    if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-                    {
-
-                        if (Input.GetKey(KeyCode.LeftShift))
-                        {
-                            player.velocity = new Vector2(-speed, player.velocity.y);
-                            anim.SetBool("isSliding", false);
-                            anim.SetBool("isrunning", true);
-                            sr.flipX = true;
-                        }
-                        else
-                        {
-                            player.velocity = new Vector2(-8f, player.velocity.y);
-                            anim.SetBool("isSliding", false);
-                            anim.SetBool("iswalking", true);
-                            sr.flipX = true;
-                        }
-                    }
-                }
-                if (onRightWall == false)
-                {
-                    if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-                    {
-
-                        if (Input.GetKey(KeyCode.LeftShift))
-                        {
-                            player.velocity = new Vector2(speed, player.velocity.y);
-                            anim.SetBool("isSliding", false);
-                            anim.SetBool("isrunning", true);
-                            sr.flipX = false;
-                        }
-                        else
-                        {
-                            player.velocity = new Vector2(8f, player.velocity.y);
-                            anim.SetBool("isSliding", false);
-                            anim.SetBool("iswalking", true);
-                            sr.flipX = false;
-                        }
-                    }
-                }
-                if (player.velocity.x > 0 || player.velocity.x < 0)
-                {
-                    if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
-                    {
-                        anim.SetBool("iswalking", false);
-                        anim.SetBool("isrunning", false);
-                        anim.SetBool("isSliding", true);
-                    }
-                }
-            }
-            if (isGrounded == true)
-            {
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    if (player.velocity.x < -9 || player.velocity.x > 9)
-                    {
-                        player.velocity = new Vector2(player.velocity.x, 10f);
-                    }
-                    else
-                    {
-                        player.velocity = new Vector2(player.velocity.x, 7f);
-                        anim.SetBool("isjumping", true);
-                    }
-                }
-                anim.SetBool("isgrounded", true);
-            }
-            if (isGrounded == false)
-            {
-                if (player.velocity.y <= 0)
-                {
-                    anim.SetBool("isjumping", false);
-                    anim.SetBool("isfalling", true);
-                }
-            }
-
-            if (isGrounded == false)
-            {
-                if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-                {
-                    player.velocity = new Vector2(player.velocity.x, -7f);
-                }
-            }
-
-            if (onLeftWall == true)
-            {
-                player.gravityScale = 0.25f;
-                anim.SetBool("isjumping", false);
-                sr.flipX = false;
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
-                {
-                    anim.SetBool("isfalling", false);
-                    anim.SetBool("isjumping", true);
-                    player.velocity = new Vector2(5f, 9f);
-                    wallJumping = true;
-                }
-                if (isGrounded == true)
-                {
-                    anim.SetBool("notmoving", true);
-                }
-            }
-            if (onRightWall == true)
-            {
-                player.gravityScale = 0.25f;
-                anim.SetBool("isjumping", false);
-                sr.flipX = true;
-
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
-                {
-                    anim.SetBool("isfalling", false);
-                    anim.SetBool("isjumping", true);
-                    player.velocity = new Vector2(-5f, 9f);
-                    wallJumping = true;
-                }
-                if (isGrounded == true)
-                {
-                    anim.SetBool("notmoving", true);
-                }
-            }
+            PlayerMovement();
+            DoWallClimb();
             DoRayCollisionCheck();
             leftwallCollisionCheck(0, 1f);
             rightwallCollisionCheck(0, 1f);
@@ -347,7 +215,10 @@ public class player_script : MonoBehaviour
             print("end");
             Application.Quit();
         }
-
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            End();
+        }
     }
     public void DoRayCollisionCheck()
     {
@@ -603,5 +474,157 @@ public class player_script : MonoBehaviour
         transform.position = startpos + new Vector2(0, 30);
     }
    
+    void DoWallClimb()
+    {
+        if (onLeftWall == true)
+        {
+            player.gravityScale = 0.25f;
+            anim.SetBool("isjumping", false);
+            sr.flipX = false;
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+            {
+                anim.SetBool("isfalling", false);
+                anim.SetBool("isjumping", true);
+                player.velocity = new Vector2(5f, 9f);
+                wallJumping = true;
+            }
+            if (isGrounded == true)
+            {
+                anim.SetBool("notmoving", true);
+            }
+        }
+        if (onRightWall == true)
+        {
+            player.gravityScale = 0.25f;
+            anim.SetBool("isjumping", false);
+            sr.flipX = true;
 
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+            {
+                anim.SetBool("isfalling", false);
+                anim.SetBool("isjumping", true);
+                player.velocity = new Vector2(-5f, 9f);
+                wallJumping = true;
+            }
+            if (isGrounded == true)
+            {
+                anim.SetBool("notmoving", true);
+            }
+        }
+    }
+
+    void PlayerStateReset()
+    {
+        player.gravityScale = 1;
+        anim.SetBool("isgrounded", false);
+        anim.SetBool("iswalking", false);
+        anim.SetBool("isrunning", false);
+        anim.SetBool("isjumping", false);
+        anim.SetBool("isfalling", false);
+        anim.SetBool("isSliding", false);
+        anim.SetBool("notmoving", false);
+
+        if (escape == false)
+        {
+            timer = 200;
+        }
+    }
+    void PlayerMovement()
+    {
+        if (player.velocity.x == 0)
+        {
+            anim.SetBool("notmoving", true);
+        }
+        if (wallJumping == false)
+        {
+            if (onLeftWall == false)
+            {
+                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+                {
+
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        player.velocity = new Vector2(-speed, player.velocity.y);
+                        anim.SetBool("isSliding", false);
+                        anim.SetBool("isrunning", true);
+                        sr.flipX = true;
+                    }
+                    else
+                    {
+                        player.velocity = new Vector2(-8f, player.velocity.y);
+                        anim.SetBool("isSliding", false);
+                        anim.SetBool("iswalking", true);
+                        sr.flipX = true;
+                    }
+                }
+            }
+            if (onRightWall == false)
+            {
+                if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+                {
+
+                    if (Input.GetKey(KeyCode.LeftShift))
+                    {
+                        player.velocity = new Vector2(speed, player.velocity.y);
+                        anim.SetBool("isSliding", false);
+                        anim.SetBool("isrunning", true);
+                        sr.flipX = false;
+                    }
+                    else
+                    {
+                        player.velocity = new Vector2(8f, player.velocity.y);
+                        anim.SetBool("isSliding", false);
+                        anim.SetBool("iswalking", true);
+                        sr.flipX = false;
+                    }
+                }
+            }
+            if (player.velocity.x > 0 || player.velocity.x < 0)
+            {
+                if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+                {
+                    anim.SetBool("iswalking", false);
+                    anim.SetBool("isrunning", false);
+                    anim.SetBool("isSliding", true);
+                }
+            }
+        }
+        if (isGrounded == true)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                if (player.velocity.x < -9 || player.velocity.x > 9)
+                {
+                    player.velocity = new Vector2(player.velocity.x, 10f);
+                }
+                else
+                {
+                    player.velocity = new Vector2(player.velocity.x, 7f);
+                    anim.SetBool("isjumping", true);
+                }
+            }
+            anim.SetBool("isgrounded", true);
+        }
+        if (isGrounded == false)
+        {
+            if (player.velocity.y <= 0)
+            {
+                anim.SetBool("isjumping", false);
+                anim.SetBool("isfalling", true);
+            }
+        }
+
+        if (isGrounded == false)
+        {
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            {
+                player.velocity = new Vector2(player.velocity.x, -7f);
+            }
+        }
+    }
+
+    void End()
+    {
+        Application.Quit(); 
+    }
 }
